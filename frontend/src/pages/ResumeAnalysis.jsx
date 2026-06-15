@@ -21,6 +21,8 @@ function ResumeAnalysis() {
     const [analysis, setAnalysis] = useState(null);
 
     const navigate = useNavigate();
+    const [startingInterview, setStartingInterview] =
+        useState(false);
 
     useEffect(() => {
         fetchAnalysis();
@@ -61,7 +63,10 @@ function ResumeAnalysis() {
 
                 <Typography
                     variant="h6"
-                    color="white"
+                    sx={{
+                        color: "#fff",
+                        fontWeight: 600,
+                    }}
                 >
                     Analyzing Resume...
                 </Typography>
@@ -72,23 +77,25 @@ function ResumeAnalysis() {
     const handleStartInterview = async () => {
         try {
 
+            setStartingInterview(true);
+
             const response =
                 await interviewApi.post(
                     `/api/interviews/start/${resumeId}`
                 );
-
-            console.log(response.data);
 
             const sessionId =
                 response.data.sessionId ||
                 response.data.id;
 
             navigate(
-                `/interview/${sessionId}`
+                `/setup/${sessionId}`
             );
 
         } catch (error) {
             console.error(error);
+        } finally {
+            setStartingInterview(false);
         }
     };
 
@@ -381,7 +388,11 @@ function ResumeAnalysis() {
                             },
                         }}
                     >
-                        🚀 Start Mock Interview
+                        {
+                            startingInterview
+                                ? "Preparing Interview..."
+                                : "🚀 Start Mock Interview"
+                        }
                     </Button>
                 </Box>
             </Container>

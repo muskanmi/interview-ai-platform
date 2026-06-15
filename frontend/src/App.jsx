@@ -5,17 +5,33 @@ import ResumeAnalysis from "./pages/ResumeAnalysis";
 import InterviewRoom from "./pages/InterviewRoom";
 import Dashboard from "./pages/Dashboard.jsx";
 import FinalReport from "./pages/FinalReport";
+import LoadingScreen from "./components/LoadingScreen.jsx";
+import InterviewSetup from "./pages/InterviewSetup.jsx";
 
 function App() {
   return (
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<UploadResume />} />
+          <Route
+              path="/"
+              element={<UploadResume
+              />}
+          />
+
+            <Route
+                path="/loading"
+                element={<LoadingScreen />}
+            />
 
           <Route
               path="/analysis/:resumeId"
               element={<ResumeAnalysis />}
           />
+
+            <Route
+                path="/setup/:sessionId"
+                element={<InterviewSetup />}
+            />
 
           <Route
               path="/interview/:sessionId"

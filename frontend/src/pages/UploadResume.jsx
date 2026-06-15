@@ -7,40 +7,31 @@ import {
     Container,
     Typography,
     Stack,
+    Chip,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { uploadResumeApi } from "../api/interviewApi";
 
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import DescriptionIcon from "@mui/icons-material/Description";
 
 export default function UploadResume() {
+
     const [file, setFile] = useState(null);
+
     const navigate = useNavigate();
 
-    const [loading, setLoading] = useState(false);
+    const uploadResume = () => {
 
-    const uploadResume = async () => {
-        if (!file) return;
-        console.log("button clicked")
-
-        try {
-            setLoading(true);
-
-            const response =
-                await uploadResumeApi(file);
-            console.log(response, "rrrrrr");
-
-            console.log(response.data);
-
-            navigate(
-                `/analysis/${response.data.id}`
-            );
-
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
+        if (!file) {
+            return;
         }
+
+        navigate("/loading", {
+            state: {
+                file,
+            },
+        });
+
     };
 
     return (
@@ -52,24 +43,29 @@ export default function UploadResume() {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+                p: 3,
             }}
         >
             <Container maxWidth="md">
                 <Card
-                    elevation={10}
+                    elevation={15}
                     sx={{
-                        borderRadius: 5,
-                        p: 4,
+                        borderRadius: 6,
+                        p: 3,
+                        backdropFilter: "blur(20px)",
                     }}
                 >
                     <CardContent>
-                        <Stack spacing={4} alignItems="center">
+                        <Stack
+                            spacing={4}
+                            alignItems="center"
+                        >
                             <Typography
                                 variant="h3"
-                                fontWeight="bold"
+                                fontWeight={800}
                                 textAlign="center"
                             >
-                                AI Mock Interview
+                                🤖 AI Mock Interview
                             </Typography>
 
                             <Typography
@@ -77,15 +73,24 @@ export default function UploadResume() {
                                 color="text.secondary"
                                 textAlign="center"
                             >
-                                Upload your resume and start an
-                                AI-powered interview experience
+                                Upload your resume and let AI generate
+                                personalized interview questions,
+                                feedback, and career insights.
                             </Typography>
 
                             <Button
-                                variant="outlined"
                                 component="label"
-                                startIcon={<CloudUploadIcon />}
+                                variant="outlined"
                                 size="large"
+                                startIcon={
+                                    <CloudUploadIcon />
+                                }
+                                sx={{
+                                    minWidth: 250,
+                                    height: 60,
+                                    borderRadius: 3,
+                                    fontWeight: 700,
+                                }}
                             >
                                 Choose Resume
 
@@ -94,28 +99,62 @@ export default function UploadResume() {
                                     type="file"
                                     accept=".pdf"
                                     onChange={(e) =>
-                                        setFile(e.target.files[0])
+                                        setFile(
+                                            e.target
+                                                .files?.[0]
+                                        )
                                     }
                                 />
                             </Button>
 
                             {file && (
-                                <Typography>
-                                    Selected: {file.name}
-                                </Typography>
+                                <Chip
+                                    icon={
+                                        <DescriptionIcon />
+                                    }
+                                    label={file.name}
+                                    color="success"
+                                    sx={{
+                                        fontSize:
+                                            "0.95rem",
+                                        p: 2.5,
+                                    }}
+                                />
                             )}
 
                             <Button
                                 variant="contained"
                                 size="large"
-                                onClick={uploadResume}
+                                fullWidth
+                                onClick={
+                                    uploadResume
+                                }
+                                disabled={!file}
                                 sx={{
-                                    px: 5,
-                                    py: 1.5,
+                                    py: 2,
+                                    borderRadius: 3,
+                                    fontSize:
+                                        "1rem",
+                                    fontWeight: 700,
+                                    textTransform:
+                                        "none",
+                                    maxWidth: 500,
                                 }}
                             >
-                                Upload Resume
+                                Upload Resume &
+                                Start Analysis
                             </Button>
+
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                textAlign="center"
+                            >
+                                Supported format:
+                                PDF • AI Analysis
+                                takes approximately
+                                10-20 seconds
+                            </Typography>
                         </Stack>
                     </CardContent>
                 </Card>

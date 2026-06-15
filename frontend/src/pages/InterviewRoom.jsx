@@ -1,7 +1,15 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-
+import Webcam from "react-webcam";
+import VideocamIcon from "@mui/icons-material/Videocam";
+import MicIcon from "@mui/icons-material/Mic";
+import SpeechRecognition,
+{
+    useSpeechRecognition
+}
+    from "react-speech-recognition";
 import {
+    Grid,Card,
     Box,
     Paper,
     Typography,
@@ -45,6 +53,55 @@ function InterviewRoom() {
     const [followupFeedback, setFollowupFeedback] = useState(null);
 
     const [showFollowup, setShowFollowup] = useState(false);
+
+    const webcamRef = useRef(null);
+    const lastSpokenQuestion = useRef("");
+    const [recording, setRecording] = useState(false);
+
+    const {
+        transcript,
+        listening,
+        resetTranscript,
+    } =
+        useSpeechRecognition();
+    const {
+        browserSupportsSpeechRecognition
+    } = useSpeechRecognition();
+
+    if (!browserSupportsSpeechRecognition) {
+
+        return (
+            <Typography>
+                Browser does not support speech recognition.
+            </Typography>
+        );
+
+    }
+
+    const startListening = () => {
+
+        SpeechRecognition.startListening({
+
+            continuous: true,
+
+            language: "en-US",
+
+        });
+
+    };
+
+    const stopListening = () => {
+        SpeechRecognition.stopListening();
+        setRecording(false);
+    };
+
+    useEffect(() => {
+
+        setAnswer(
+            transcript
+        );
+
+    }, [transcript]);
 
     useEffect(() => {
 
@@ -154,6 +211,43 @@ function InterviewRoom() {
         }
 
     };
+
+    const speakQuestion = (text) => {
+
+        SpeechRecognition.stopListening();
+
+        setRecording(false);
+
+        window.speechSynthesis.cancel();
+
+        const speech =
+            new SpeechSynthesisUtterance(text);
+
+        speech.rate = 1;
+        speech.pitch = 1;
+
+        window.speechSynthesis.speak(speech);
+    };
+
+    useEffect(() => {
+
+        if (!question?.question) return;
+
+        if (
+            lastSpokenQuestion.current ===
+            question.question
+        ) {
+            return;
+        }
+
+        lastSpokenQuestion.current =
+            question.question;
+
+        speakQuestion(
+            question.question
+        );
+
+    }, [question]);
 
     if (loading) {
 
@@ -284,15 +378,15 @@ function InterviewRoom() {
                 </Typography>
 
                 {status && (
-                    <>
+                    <Box mb={5}>
                         <Stack
                             direction="row"
                             justifyContent="space-between"
                             alignItems="center"
-                            mb={2}
+                            mb={1}
                         >
                             <Typography
-                                variant="body1"
+                                variant="h6"
                                 fontWeight={700}
                             >
                                 Question {status.currentQuestion} of{" "}
@@ -300,8 +394,12 @@ function InterviewRoom() {
                             </Typography>
 
                             <Chip
-                                color="primary"
                                 label={`${status.progress}% Complete`}
+                                color="primary"
+                                sx={{
+                                    fontWeight: 700,
+                                    fontSize: "0.9rem",
+                                }}
                             />
                         </Stack>
 
@@ -310,23 +408,159 @@ function InterviewRoom() {
                             value={status.progress}
                             sx={{
                                 height: 12,
-                                borderRadius: 10,
-                                mb: 4,
+                                borderRadius: 20,
+
+                                "& .MuiLinearProgress-bar": {
+                                    borderRadius: 20,
+                                },
                             }}
                         />
-                    </>
+                    </Box>
                 )}
 
-                {/* MAIN QUESTION */}
+                {/* VIDEO SECTION */}
+
+                <Box
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: {
+                            xs: "1fr",
+                            md: "1fr 1fr",
+                        },
+                        gap: 3,
+                        mb: 4,
+                        pt: 2
+                    }}
+                >
+                    {/* AI INTERVIEWER */}
+
+                    <Paper
+                        elevation={10}
+                        sx={{
+                            borderRadius: 5,
+                            overflow: "hidden",
+                            background:
+                                "linear-gradient(135deg,#4f46e5,#7c3aed)",
+                            color: "white",
+                            minHeight: 350,
+                            display: "flex",
+                            flexDirection: "column",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            position: "relative",
+                        }}
+                    >
+                        <Box
+                            sx={{
+                                width: 140,
+                                height: 140,
+                                borderRadius: "50%",
+                                bgcolor: "rgba(255,255,255,0.15)",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                fontSize: "5rem",
+                                animation:
+                                    "pulse 2s infinite",
+                            }}
+                        >
+                            🤖
+                        </Box>
+
+                        <Typography
+                            variant="h4"
+                            fontWeight={700}
+                            mt={3}
+                        >
+                            AI Interviewer
+                        </Typography>
+
+                        <Chip
+                            label="Speaking..."
+                            color="success"
+                            sx={{
+                                mt: 2,
+                                fontWeight: 700,
+                            }}
+                        />
+
+                        <Typography
+                            sx={{
+                                mt: 2,
+                                opacity: 0.9,
+                            }}
+                        >
+                            Asking technical questions
+                        </Typography>
+                    </Paper>
+
+                    {/* USER CAMERA */}
+
+                    <Paper
+                        elevation={10}
+                        sx={{
+                            borderRadius: 5,
+                            overflow: "hidden",
+                            position: "relative",
+                            minHeight: 350,
+                        }}
+                    >
+                        <Webcam
+                            ref={webcamRef}
+                            mirrored
+                            style={{
+                                width: "100%",
+                                height: "100%",
+                                objectFit: "cover",
+                            }}
+                        />
+
+                        <Chip
+                            icon={<VideocamIcon />}
+                            label="LIVE"
+                            color="success"
+                            sx={{
+                                position: "absolute",
+                                top: 15,
+                                left: 15,
+                                fontWeight: 700,
+                            }}
+                        />
+
+                        <Chip
+                            icon={<MicIcon />}
+                            label={
+                                recording
+                                    ? "Recording"
+                                    : "Mic Off"
+                            }
+                            color={
+                                recording
+                                    ? "error"
+                                    : "default"
+                            }
+                            sx={{
+                                position: "absolute",
+                                top: 15,
+                                right: 15,
+                                fontWeight: 700,
+                            }}
+                        />
+                    </Paper>
+                </Box>
+
+                {/* QUESTION */}
 
                 <Paper
-                    elevation={0}
+                    elevation={8}
                     sx={{
-                        p: 3,
+                        p: 4,
                         mb: 3,
-                        borderRadius: 3,
-                        border: "1px solid #e2e8f0",
-                        bgcolor: "#fafafa",
+                        borderRadius: 5,
+                        background:
+                            "linear-gradient(180deg,#ffffff,#f8fafc)",
+                        borderLeft:
+                            "6px solid #6366f1",
                     }}
                 >
                     <Typography
@@ -334,7 +568,7 @@ function InterviewRoom() {
                         fontWeight={700}
                         gutterBottom
                     >
-                        Current Question
+                        AI Question
                     </Typography>
 
                     <Typography
@@ -344,12 +578,11 @@ function InterviewRoom() {
                             lineHeight: 1.9,
                         }}
                     >
-                        {question?.question ||
-                            question}
+                        {question?.question || question}
                     </Typography>
                 </Paper>
 
-                {/* ANSWER BOX */}
+                {/* ANSWER */}
 
                 <TextField
                     fullWidth
@@ -357,15 +590,39 @@ function InterviewRoom() {
                     rows={8}
                     value={answer}
                     onChange={(e) =>
-                        setAnswer(
-                            e.target.value
-                        )
+                        setAnswer(e.target.value)
                     }
-                    placeholder="Write your answer here..."
+                    placeholder="Speak or type your answer..."
+                    sx={{
+                        mb: 2,
+                    }}
+                />
+
+                <Button
+                    startIcon={<MicIcon />}
+                    variant={
+                        recording
+                            ? "contained"
+                            : "outlined"
+                    }
+                    color="error"
+                    onClick={() => {
+                        if (recording) {
+                            stopListening();
+                        } else {
+                            resetTranscript();
+                            startListening();
+                            setRecording(true);
+                        }
+                    }}
                     sx={{
                         mb: 3,
                     }}
-                />
+                >
+                    {recording
+                        ? "Stop Recording"
+                        : "Start Speaking"}
+                </Button>
 
                 <Button
                     fullWidth
@@ -393,7 +650,7 @@ function InterviewRoom() {
                     />
                 )}
 
-                {/* MAIN FEEDBACK */}
+                {/* FEEDBACK */}
 
                 {feedback && (
                     <Paper
@@ -402,8 +659,7 @@ function InterviewRoom() {
                             mt: 5,
                             p: 4,
                             borderRadius: 4,
-                            background:
-                                "#f8fafc",
+                            background: "#f8fafc",
                         }}
                     >
                         <Typography
@@ -435,7 +691,7 @@ function InterviewRoom() {
                     </Paper>
                 )}
 
-                {/* FOLLOWUP QUESTION */}
+                {/* FOLLOWUP */}
 
                 {showFollowup && (
                     <Paper
@@ -445,8 +701,7 @@ function InterviewRoom() {
                             p: 4,
                             borderRadius: 4,
                             border: "2px solid #7c3aed",
-                            background:
-                                "#faf5ff",
+                            background: "#faf5ff",
                         }}
                     >
                         <Typography
@@ -457,23 +712,10 @@ function InterviewRoom() {
                             Follow-up Question
                         </Typography>
 
-                        <Alert
-                            severity="warning"
-                            sx={{
-                                mb: 3,
-                            }}
-                        >
-                            AI generated a deeper
-                            follow-up question based
-                            on your answer.
-                        </Alert>
-
                         <Typography
-                            variant="body1"
                             sx={{
                                 mb: 3,
                                 lineHeight: 1.8,
-                                fontSize: "1.05rem",
                             }}
                         >
                             {followupQuestion}
@@ -483,9 +725,7 @@ function InterviewRoom() {
                             fullWidth
                             multiline
                             rows={6}
-                            value={
-                                followupAnswer
-                            }
+                            value={followupAnswer}
                             onChange={(e) =>
                                 setFollowupAnswer(
                                     e.target.value
@@ -501,7 +741,6 @@ function InterviewRoom() {
                             sx={{
                                 mt: 3,
                                 py: 2,
-                                fontWeight: 700,
                             }}
                             onClick={
                                 submitFollowupAnswer
@@ -521,8 +760,6 @@ function InterviewRoom() {
                             mt: 4,
                             p: 4,
                             borderRadius: 4,
-                            background:
-                                "#f8fafc",
                         }}
                     >
                         <Typography
@@ -543,7 +780,7 @@ function InterviewRoom() {
                                         : "error"
                             }
                             sx={{
-                                mb: 3,
+                                mb: 2,
                             }}
                         />
 
