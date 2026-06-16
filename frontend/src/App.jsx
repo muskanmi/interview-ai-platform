@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import FinalReport from "./pages/FinalReport";
 import LoadingScreen from "./components/LoadingScreen.jsx";
 import InterviewSetup from "./pages/InterviewSetup.jsx";
+import InterviewHistory from "./pages/InterviewHistory.jsx";
 
 function App() {
   return (
@@ -47,6 +48,10 @@ function App() {
               path="/report/:sessionId"
               element={<FinalReport />}
           />
+            <Route
+                path="/history/:sessionId"
+                element={<InterviewHistory />}
+            />
         </Routes>
       </BrowserRouter>
   );

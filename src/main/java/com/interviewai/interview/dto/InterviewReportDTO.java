@@ -14,4 +14,12 @@ public class InterviewReportDTO {
     private List<String> weaknesses;
 
     private List<String> recommendations;
+
+    private String overallSummary;
+
+    private String hiringRecommendation;
+
+    private String communicationLevel;
+
+    private String technicalLevel;
 }

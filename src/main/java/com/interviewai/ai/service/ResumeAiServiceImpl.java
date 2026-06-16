@@ -138,7 +138,7 @@ public class ResumeAiServiceImpl implements ResumeAiService {
                     7. Focus heavily on technologies found in the resume.
                     8. Challenge incomplete answers.
                     9. Maintain interviewer tone.
-                    10. Generate the first 10 interview questions.
+                    10. Generate the first 2 interview questions.
                     
                     IMPORTANT:
                     Return ONLY raw JSON.
@@ -273,12 +273,16 @@ public class ResumeAiServiceImpl implements ResumeAiService {
             
             Return JSON only.
             
-            {
-              "averageScore": 0,
-              "strengths": [],
-              "weaknesses": [],
-              "recommendations": []
-            }
+                {
+                   "averageScore": 0,
+                   "technicalLevel": "",
+                   "communicationLevel": "",
+                   "hiringRecommendation": "",
+                   "overallSummary": "",
+                   "strengths": [],
+                   "weaknesses": [],
+                   "recommendations": []
+                 }
             
             Interview:
             

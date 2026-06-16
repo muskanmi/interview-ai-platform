@@ -30,6 +30,11 @@ public class InterviewServiceImpl implements InterviewService {
                 resumeAiService.generateQuestions(
                         resumeId);
 
+        System.out.println(
+                "Questions generated = "
+                        + questions.size()
+        );
+
         InterviewSession session =
                 InterviewSession.builder()
                         .resumeId(resumeId)
@@ -366,6 +371,10 @@ public class InterviewServiceImpl implements InterviewService {
                                         report.getRecommendations()
                                 )
                         )
+                        .overallSummary(report.getOverallSummary())
+                        .technicalLevel(report.getTechnicalLevel())
+                        .communicationLevel(report.getCommunicationLevel())
+                        .hiringRecommendation(report.getHiringRecommendation())
                         .build();
 
         interviewReportRepository.save(

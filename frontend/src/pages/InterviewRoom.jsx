@@ -182,6 +182,32 @@ function InterviewRoom() {
 
             setFeedback(answerResponse.data);
 
+            const statusResponse =
+                await interviewApi.get(
+                    `/api/interviews/${sessionId}/status`
+                );
+
+            const latestStatus =
+                statusResponse.data;
+
+            setStatus(latestStatus);
+
+            if (
+                latestStatus.currentQuestion >=
+                latestStatus.totalQuestions
+            ) {
+
+                await interviewApi.post(
+                    `/api/interviews/${sessionId}/complete`
+                );
+
+                navigate(
+                    `/report/${sessionId}`
+                );
+
+                return;
+            }
+
             const followupResponse =
                 await interviewApi.post(
                     `/api/interviews/${sessionId}/followup`,

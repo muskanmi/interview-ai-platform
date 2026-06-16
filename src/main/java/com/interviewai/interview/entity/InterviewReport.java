@@ -28,4 +28,14 @@ public class InterviewReport {
 
     @Column(columnDefinition = "TEXT")
     private String recommendations;
+
+    @Column(columnDefinition = "TEXT")
+    private String overallSummary;
+
+    @Column(columnDefinition = "TEXT")
+    private String hiringRecommendation;
+
+    private String communicationLevel;
+
+    private String technicalLevel;
 }
