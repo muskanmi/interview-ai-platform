@@ -12,10 +12,14 @@ import {
 } from "@mui/material";
 
 import interviewApi from "../api/interviewApi";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { useLocation } from "react-router-dom";
 
 function FinalReport() {
 
     const { sessionId } = useParams();
+    const location = useLocation();
 
     const [report, setReport] =
         useState(null);
@@ -25,6 +29,97 @@ function FinalReport() {
         loadReport();
 
     }, []);
+
+    const generatePdf = async () => {
+
+        const element =
+            document.getElementById(
+                "report-content"
+            );
+
+        if (!element) return;
+
+        const canvas =
+            await html2canvas(
+                element,
+                {
+                    scale: 3,
+                    useCORS: true,
+                    logging: false,
+                    scrollY: -window.scrollY,
+                    windowWidth: element.scrollWidth,
+                    windowHeight: element.scrollHeight
+                }
+            );
+
+        const imgData =
+            canvas.toDataURL(
+                "image/png"
+            );
+
+        const pdf =
+            new jsPDF(
+                "p",
+                "mm",
+                "a4"
+            );
+
+        const pdfWidth =
+            pdf.internal.pageSize.getWidth();
+
+        const pdfHeight =
+            pdf.internal.pageSize.getHeight();
+
+        const imgWidth =
+            pdfWidth;
+
+        const imgHeight =
+            (canvas.height * imgWidth)
+            / canvas.width;
+
+        let heightLeft =
+            imgHeight;
+
+        let position = 0;
+
+        pdf.addImage(
+            imgData,
+            "PNG",
+            0,
+            position,
+            imgWidth,
+            imgHeight
+        );
+
+        heightLeft -= pdfHeight;
+
+        while (
+            heightLeft > 0
+            ) {
+
+            position =
+                heightLeft -
+                imgHeight;
+
+            pdf.addPage();
+
+            pdf.addImage(
+                imgData,
+                "PNG",
+                0,
+                position,
+                imgWidth,
+                imgHeight
+            );
+
+            heightLeft -=
+                pdfHeight;
+        }
+
+        pdf.save(
+            "Interview_Report.pdf"
+        );
+    };
 
     const loadReport = async () => {
 
@@ -44,6 +139,29 @@ function FinalReport() {
         }
 
     };
+
+    const searchParams =
+        new URLSearchParams(location.search);
+
+    const shouldDownload =
+        searchParams.get("download");
+
+    useEffect(() => {
+
+        if (
+            report &&
+            shouldDownload === "true"
+        ) {
+
+            setTimeout(() => {
+                requestAnimationFrame(() => {
+                    generatePdf();
+                });
+            }, 1500);
+
+        }
+
+    }, [report]);
 
     if (!report) {
 
@@ -71,6 +189,7 @@ function FinalReport() {
             }}
         >
             <Paper
+                id="report-content"
                 elevation={12}
                 sx={{
                     maxWidth: 1200,
@@ -116,17 +235,28 @@ function FinalReport() {
                                 Overall Score
                             </Typography>
 
-                            <Chip
-                                label={
-                                    report.averageScore ??
-                                    "N/A"
-                                }
-                                color="primary"
+                            <Box
                                 sx={{
                                     mt: 2,
-                                    fontSize: "1rem"
+                                    width: 70,
+                                    height: 70,
+                                    borderRadius: "50%",
+                                    bgcolor: "#1976d2",
+                                    color: "white",
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    mx: "auto"
                                 }}
-                            />
+                            >
+                                <Typography
+                                    variant="h5"
+                                    fontWeight={700}
+                                    color="white"
+                                >
+                                    {report.averageScore ?? "N/A"}
+                                </Typography>
+                            </Box>
                         </Paper>
                     </Grid>
 
@@ -144,25 +274,29 @@ function FinalReport() {
                                 Performance
                             </Typography>
 
-                            <Chip
-                                label={
-                                    report.averageScore >= 8
-                                        ? "Excellent"
-                                        : report.averageScore >= 6
-                                            ? "Good"
-                                            : "Needs Improvement"
-                                }
-                                color={
-                                    report.averageScore >= 8
-                                        ? "success"
-                                        : report.averageScore >= 6
-                                            ? "warning"
-                                            : "error"
-                                }
+                            <Box
                                 sx={{
-                                    mt: 2
+                                    mt: 2,
+                                    bgcolor:
+                                        report.averageScore >= 8
+                                            ? "#2e7d32"
+                                            : report.averageScore >= 6
+                                                ? "#ed6c02"
+                                                : "#d32f2f",
+                                    color: "white",
+                                    px: 3,
+                                    py: 1,
+                                    borderRadius: 10,
+                                    display: "inline-block",
+                                    fontWeight: 700
                                 }}
-                            />
+                            >
+                                {report.averageScore >= 8
+                                    ? "Excellent"
+                                    : report.averageScore >= 6
+                                        ? "Good"
+                                        : "Needs Improvement"}
+                            </Box>
                         </Paper>
                     </Grid>
 
@@ -180,11 +314,20 @@ function FinalReport() {
                                 Status
                             </Typography>
 
-                            <Chip
-                                label="Completed"
-                                color="success"
-                                sx={{ mt: 2 }}
-                            />
+                            <Box
+                                sx={{
+                                    mt: 2,
+                                    bgcolor: "#2e7d32",
+                                    color: "white",
+                                    px: 3,
+                                    py: 1,
+                                    borderRadius: 10,
+                                    display: "inline-block",
+                                    fontWeight: 700
+                                }}
+                            >
+                                Completed
+                            </Box>
                         </Paper>
                     </Grid>
 
@@ -194,7 +337,8 @@ function FinalReport() {
                     sx={{
                         p: 4,
                         mb: 4,
-                        bgcolor: "#f8fafc"
+                        bgcolor: "#f8fafc",
+                        pageBreakInside: "avoid"
                     }}
                 >
                     <Typography
@@ -215,7 +359,9 @@ function FinalReport() {
                     sx={{
                         p: 4,
                         mb: 4,
-                        bgcolor: "#fff7ed"
+                        bgcolor: "#fff7ed",
+                        overflowWrap: "break-word",
+                        wordBreak: "break-word"
                     }}
                 >
                     <Typography
@@ -235,7 +381,9 @@ function FinalReport() {
                 <Paper
                     sx={{
                         p: 4,
-                        bgcolor: "#ecfeff"
+                        bgcolor: "#ecfeff",
+                        overflowWrap: "break-word",
+                        wordBreak: "break-word"
                     }}
                 >
                     <Typography

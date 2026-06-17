@@ -192,17 +192,14 @@ function InterviewRoom() {
 
             setStatus(latestStatus);
 
-            if (
-                latestStatus.currentQuestion >=
-                latestStatus.totalQuestions
-            ) {
+            if (latestStatus.completed) {
 
                 await interviewApi.post(
                     `/api/interviews/${sessionId}/complete`
                 );
 
                 navigate(
-                    `/report/${sessionId}`
+                    `/dashboard/${sessionId}`
                 );
 
                 return;
@@ -335,7 +332,7 @@ function InterviewRoom() {
                 );
 
                 navigate(
-                    `/report/${sessionId}`
+                    `/dashboard/${sessionId}`
                 );
 
                 return;
